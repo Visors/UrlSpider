@@ -18,8 +18,9 @@ class BaiduSpider:
     op.add_argument('--no-sandbox')
     op.add_argument('log-level=3')
 
-    # 加载错误报头
-    load_fail = "Can't load this page!"
+    load_fail = "Can't load this page!"  # 加载错误报头
+
+    max_page = 5  # 最大加载页数
 
     def __init__(self):
         # 基本信息
@@ -66,13 +67,6 @@ class BaiduSpider:
         except:
             raise IndexError("There is no next page!")
 
-    def getPageNum(self):
-        list = self.driver.find_elements_by_xpath("//*[@class='pc']")
-        for i in list:
-            print(i)
-        print(len(list))
-        return min(len(list), 5)
-
     def search(self, keyword):
         self.driver.maximize_window()
         try:
@@ -86,20 +80,23 @@ class BaiduSpider:
         self.driver.find_element_by_id('kw').send_keys(keyword)
         self.driver.find_element_by_id('su').click()
 
-        # self.getPageItem()
+        print("Now is Page 1")
+        self.getPageItem()
 
-        page_num = self.getPageNum()
+        for i in range(2, self.max_page + 1):
+            self.flip()
+            print("Now is Page " + str(i))
+            self.getPageItem()
 
-        # for i in range(2, page_num + 1):
-        #     self.flip()
-        #     self.getPageItem()
-        #
-        # return self.data
+        self.driver.close()
+        self.url_driver.close()
+        return self.data
 
 
 if __name__ == '__main__':
     baidu_spider = BaiduSpider()
     data = baidu_spider.search('MacBook')
+    print("Return data")
     while not data.empty():
         item = data.get()
         print(item.title)
